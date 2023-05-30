@@ -1,158 +1,129 @@
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="index.css">
-    <script src="vue.min.js"></script>
-    <script src="index.js"></script>
-</head>
-<body>
-<div id="app">
-    <p>原链接：{{result.link}}</p>
-    <p>生成的链接：{{result.formatLink}}</p>
-    <p>显示的链接：<span v-html="result.viewLink"></span></p>
-    <p>替换了{{result.formatCount}}个参数</p>
-</div>
-</body>
-<script>
-    new Vue({
-        el: '#app',
-        data: function () {
-            // TODO link、rule需要增加类型约束
-            function formatLink(link, rules) {
-                const result = {
-                    link: link,
-                    formatLink: link,
-                    formatCount: 0,
-                    viewLink: link,
-                };
-                link = encodeURI(link);
-                const ruleKeys = rules.map(rule => rule.key);
-                if (link) {
-                    const start = link.indexOf("?");
-                    if (start > 0) {
-                        let newLink = link.substring(0, start + 1);
-                        // 截取 ? 之后的字符串
-                        const str = link.substring(start + 1, link.length);
-                        // 按 & 分割
-                        const formatPvStrArr = []; // 例如：["uuid=${uuid}", "sjuser=123"]
-                        const viewPvStrArr = []; // 例如：["<span style='color: red; font-weight: bold'>uuid=${uuid}</span>", "sjuser=123"]
-                        const pvStrArr = str.split('&');
-                        let formatCount = 0; // 替换的个数
-                        pvStrArr.forEach(pvStr => {
-                            // 按 = 分割
-                            const pvArr = pvStr.split("=");
-                            // 参数名是否存在于rule中
-                            if (pvArr.length === 2 && ruleKeys.filter(key => key === pvArr[0]).length > 0) {
-                                formatCount++;
-                                formatPvStrArr.push(pvArr[0] + '=${' + pvArr[0] + '}');
-                                viewPvStrArr.push("<span style='color: red; font-weight: bold'>" + pvArr[0] + '=${' + pvArr[0] + '}' + "</span>");
-                            } else {
-                                formatPvStrArr.push(pvStr);
-                                viewPvStrArr.push(pvStr);
-                            }
-                        });
-                        // 拼接新的链接
-                        result.formatLink = newLink + formatPvStrArr.join("&");
-                        result.formatCount = formatCount;
-                        result.viewLink = newLink + viewPvStrArr.join("&");
-                    }
+```java
+package com.cxxwl96.codepart;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
+import lombok.SneakyThrows;
+
+public class MainClass {
+    @SneakyThrows
+    public static void main(String[] args) {
+        String express = "(1+2)*3/{(1+2*3)/[3-5]-1}-5";
+        Map<String, String> map = new HashMap<>();
+        map.put(")", "(");
+        map.put("]", "[");
+        map.put("}", "{");
+        Stack<String> stack = new Stack<>();
+        for (int i = 0; i < express.length(); i++) {
+            String ch = String.valueOf(express.charAt(i));
+            if (map.containsKey(ch)) {
+                List<String> list = new ArrayList<>();
+                while (!stack.isEmpty() && !map.get(ch).equals(stack.peek())) {
+                    list.add(stack.pop());
                 }
-                return result;
+                stack.pop();
+                String eval = eval(reverse(list));
+                stack.push(eval);
+            } else {
+                stack.push(ch);
             }
+        }
+        List<String> list = new ArrayList<>();
+        while (!stack.isEmpty()) {
+            list.add(stack.pop());
+        }
+        System.out.println(eval(reverse(list)));
+    }
 
-            let link = 'http://www.baidu.com?uuid=123456&sjuser=abcde';
-            const rules = [
-                {key: 'uuid', value: ''},
-                {key: 'sjuser', value: ''},
-            ];
-            const result = formatLink(link, rules);
-            if (result.formatCount !== rules.length) {
-                this.$message.error('该公司有' + rules.length + '个参数名，但是只替换了' + result.formatCount + '个参数，请检查链接是否正确');
+    private static String reverse(List<String> list) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = list.size() - 1; i >= 0; i--) {
+            sb.append(list.get(i));
+        }
+        return sb.toString();
+    }
+
+    private static String eval(String express) {
+        if (isNumber(express)) {
+            return express;
+        }
+        for (int i = 1; i < express.length(); i++) {
+            if (express.charAt(i) == '*' || express.charAt(i) == '/') {
+                String newExpress = evalTwoNumber(express, i, express.charAt(i));
+                return eval(newExpress);
             }
-            return {
-                result,
+        }
+        for (int i = 1; i < express.length(); i++) {
+            if (express.charAt(i) == '+' || express.charAt(i) == '-') {
+                String newExpress = evalTwoNumber(express, i, express.charAt(i));
+                return eval(newExpress);
             }
-        },
-        created() {
+        }
+        return "";
+    }
 
-        },
-        methods: {}
-    });
-</script>
-</html>
-```
+    private static String evalTwoNumber(String express, int i, char letter) {
+        int index1 = i - 1;
+        while (index1 >= 0 && isNumber(express.charAt(index1))) {
+            index1--;
+        }
+        if (index1 == 0 && express.charAt(index1) == '-') {
+            index1--;
+        }
+        int num1 = Integer.parseInt(express.substring(index1 + 1, i));
+        int index2 = i + 1;
+        if (index2 < express.length() && express.charAt(index2) == '-') {
+            index2++;
+        }
+        while (index2 < express.length() && isNumber(express.charAt(index2))) {
+            index2++;
+        }
+        int num2 = Integer.parseInt(express.substring(i + 1, index2));
+        int ans = 0;
+        switch (letter) {
+            case '+':
+                ans = num1 + num2;
+                break;
+            case '-':
+                ans = num1 - num2;
+                break;
+            case '*':
+                ans = num1 * num2;
+                break;
+            case '/':
+                ans = num1 / num2;
+                break;
+        }
+        return express.substring(0, index1 + 1) + ans + express.substring(index2);
+    }
 
-```nginx
+    private static boolean isNumber(String text) {
+        if (text == null || text.isEmpty()) {
+            return false;
+        }
+        int i = 0;
+        if (text.charAt(0) == '-' || text.charAt(0) == '+') {
+            if (text.length() < 2) {
+                return false;
+            }
+            i = 1;
+        }
+        for (; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            if (ch < '0' || ch > '9') {
+                return false;
+            }
+        }
+        return true;
+    }
 
-#user  nobody;
-worker_processes  1;
-
-#error_log  logs/error.log;
-#error_log  logs/error.log  notice;
-#error_log  logs/error.log  info;
-
-#pid        logs/nginx.pid;
-
-
-events {
-    worker_connections  1024;
+    private static boolean isNumber(char ch) {
+        return ch >= '0' && ch <= '9';
+    }
 }
 
-
-http {
-    include       mime.types;
-    default_type  application/octet-stream;
-
-    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-    #                  '$status $body_bytes_sent "$http_referer" '
-    #                  '"$http_user_agent" "$http_x_forwarded_for"';
-
-    #access_log  logs/access.log  main;
-
-    sendfile        on;
-    #tcp_nopush     on;
-
-    #keepalive_timeout  0;
-    keepalive_timeout  65;
-
-    #gzip  on;
-
-    server {
-    	listen 8080; 
-    	location / {
-    		root path;
-    	}
-
-    }
-    server {
-    	listen 4000; 
-    	location / {
-    		root path;
-    	}
-
-    }
-    server {
-    	listen 10086; 
-    	location / {
-    		root path;
-    	}
-
-    }
-    server {
-    	listen 10087; 
-    	location / {
-    		root path;
-    	}
-    }
-    server {
-    	listen 10088; 
-    	location / {
-    		root path;
-    	}
-    }
-
-}
 ```
