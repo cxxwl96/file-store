@@ -193,5 +193,45 @@ public class Main {
     }
 }
 ```
+# 放苹果
+```java
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Scanner;
 
+public class Main {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int m = in.nextInt(); // 苹果
+        int n = in.nextInt(); // 盘子
+        HashSet<String> ans = new HashSet<>();
+        fun(m, n, new int[n], 0, 0, ans);
+        System.out.println(ans.size());
+    }
+
+    /**
+     * @param m 苹果个数
+     * @param n 盘子个数
+     * @param arr 每个盘子存放苹果的个数
+     * @param index 盘子索引
+     * @param curM 已放苹果个数
+     * @param ans 结果
+     */
+    private static void fun(int m, int n, int[] arr, int index, int curM, HashSet<String> ans) {
+        if (index >= n) {
+            if (curM == m) {
+                int[] temp = new int[arr.length];
+                System.arraycopy(arr, 0, temp, 0, arr.length);
+                Arrays.sort(temp);
+                ans.add(Arrays.toString(temp));
+            }
+            return;
+        }
+        for (int i = 0; i <= m; i++) {
+            arr[index] = i;
+            fun(m, n, arr, index + 1, i + curM, ans);
+        }
+    }
+}
+```
 
