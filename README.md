@@ -163,9 +163,41 @@ public class Main {
     }
 }
 ```
-# 
+# 矩阵乘法
 ```java
+import java.util.Scanner;
 
+public class Main {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int x = in.nextInt();
+        int y = in.nextInt();
+        int z = in.nextInt();
+        int[][] arr1 = new int[x][y];
+        int[][] arr2 = new int[y][z];
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                arr1[i][j] = in.nextInt();
+            }
+        }
+        for (int i = 0; i < y; i++) {
+            for (int j = 0; j < z; j++) {
+                arr2[i][j] = in.nextInt();
+            }
+        }
+
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < z; j++) {
+                int sum = 0;
+                for (int k = 0; k < y; k++) {
+                    sum += arr1[i][k] * arr2[k][j];
+                }
+                System.out.print(sum + " ");
+            }
+            System.out.println();
+        }
+    }
+}
 ```
 # 
 ```java
