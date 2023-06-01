@@ -199,9 +199,79 @@ public class Main {
     }
 }
 ```
-# 
+# 矩阵乘法计算量估算
 ```java
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.Stack;
 
+public class Main {
+    private static class MAP {
+        private int row;
+
+        private int col;
+
+        public MAP(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int n = Integer.parseInt(in.nextLine());
+        List<MAP> maps = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            String[] split = in.nextLine().split(" ");
+            maps.add(new MAP(Integer.parseInt(split[0]), Integer.parseInt(split[1])));
+        }
+        char[] array = in.nextLine().toCharArray();
+        Map<Character, MAP> map = new HashMap<>();
+        int i = 0;
+        for (char ch : array) {
+            if (ch != '(' && ch != ')') {
+                map.put(ch, maps.get(i++));
+            }
+        }
+
+        Stack<Character> stack = new Stack<>();
+        int total = 0;
+        for (char ch : array) {
+            if (ch == ')') {
+                StringBuilder sb = new StringBuilder();
+                while (stack.peek() != '(') {
+                    sb.append(stack.pop());
+                }
+                stack.pop();
+                // 计算
+                int num = 0;
+                String s = sb.reverse().toString();
+                int row = 0, col = 0;
+                if (s.length() >= 2) {
+                    for (i = 0; i < s.length() - 1; i++) {
+                        MAP m1 = map.get(s.charAt(i));
+                        MAP m2 = map.get(s.charAt(i + 1));
+                        num += m1.row * m1.col * m2.col;
+                        m2.row = m1.row;
+                        row = m2.row;
+                        col = m2.col;
+                    }
+                }
+                if (num > 0) {
+                    total += num;
+                    map.put('1', new MAP(row, col));
+                    stack.push('1');
+                }
+            } else {
+                stack.push(ch);
+            }
+        }
+        System.out.println(total);
+    }
+}
 ```
 # 
 ```java
